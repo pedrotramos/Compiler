@@ -1,1 +1,1 @@
-# LogicaDaComputacao
+# LogComp
