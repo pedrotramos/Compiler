@@ -1,42 +1,52 @@
 import argparse
 
 
-def calculator(eq):
+class Calculator:
+    def __init__(self):
+        self.txt = None
+        self.result = 0
+        self.support = ""
+        self.valid = "1234567890+- "
+        self.list_sign = []
+        self.list_num = []
+        self.error = False
 
-    valid = "1234567890-+ "
-
-    txt = eq.replace(" ", "")
-
-    list_sign = []
-
-    support = ""
-
-    for char in txt:
-        if char not in valid:
-            print("Argumento Inválido. Há caracteres inválidos no argumento.")
-            return
-        if char in "+-":
-            support += " "
-            if char == "+":
-                list_sign.append(1)
+    def parse(self, arg):
+        self.txt = arg.replace(" ", "")
+        for i in range(len(self.txt)):
+            if self.txt[i] not in self.valid:
+                print("Argumento Inválido. Há caracteres inválidos no argumento.")
+                self.error = True
+                break
+            if i == 0:
+                if self.txt[i] == "-":
+                    self.list_sign.append(-1)
+                elif self.txt[i] == "+":
+                    self.list_sign.append(1)
+                else:
+                    self.list_sign.append(1)
+                    self.support += self.txt[i]
             else:
-                list_sign.append(-1)
-        else:
-            support += char
+                if self.txt[i] in "+-":
+                    self.support += " "
+                    if self.txt[i] == "+":
+                        self.list_sign.append(1)
+                    else:
+                        self.list_sign.append(-1)
+                else:
+                    self.support += self.txt[i]
 
-    list_num = support.split()
+        self.list_num = self.support.split()
 
-    if len(list_sign) != len(list_num):
-        print("Argumento Inválido. Há problemas com os sinais.")
-        return
+        if len(self.list_sign) != len(self.list_num):
+            print("Argumento Inválido. Há problemas com os sinais.")
+            self.error = True
 
-    result = 0
-
-    for num, sign in zip(list_num, list_sign):
-        result += sign * int(num)
-
-    print(f"{txt}={result}")
-    return
+    def calculate(self):
+        if not self.error:
+            for num, sign in zip(self.list_num, self.list_sign):
+                self.result += sign * int(num)
+            print(f"Resultado: {calc.result}")
 
 
 if __name__ == "__main__":
@@ -50,4 +60,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    calculator(args.equation)
+    calc = Calculator()
+    calc.parse(args.equation)
+    calc.calculate()
