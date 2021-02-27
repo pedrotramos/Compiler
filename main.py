@@ -6,7 +6,7 @@ class Calculator:
         self.txt = None
         self.result = 0
         self.support = ""
-        self.valid = "1234567890+- "
+        self.valid = "1234567890+- \t"
         self.list_sign = []
         self.list_num = []
         self.error = False
@@ -19,10 +19,10 @@ class Calculator:
                 self.error = True
                 break
             if i == 0:
-                if self.txt[i] == "-":
-                    self.list_sign.append(-1)
-                elif self.txt[i] == "+":
-                    self.list_sign.append(1)
+                if self.txt[i] in "-+":
+                    print("Argumento Inválido. Há problemas com os sinais.")
+                    self.error = True
+                    break
                 else:
                     self.list_sign.append(1)
                     self.support += self.txt[i]
@@ -51,10 +51,12 @@ class Calculator:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(prefix_chars="-")
 
     parser.add_argument(
-        "equation",
+        "-e",
+        "--equation",
+        type=str,
         help="Argumento que contém a equação a ser calculada",
     )
 
