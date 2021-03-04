@@ -1,52 +1,76 @@
 import argparse
 
 
-class Calculator:
-    def __init__(self):
-        self.txt = None
-        self.result = 0
-        self.support = ""
-        self.valid = "1234567890+- \t"
-        self.list_sign = []
-        self.list_num = []
-        self.error = False
+class Token:
+    def __init__(self, token_value, token_type):
+        self.type = token_type
+        self.value = token_value
 
-    def parse(self, arg):
-        self.txt = arg.replace(" ", "")
-        for i in range(len(self.txt)):
-            if self.txt[i] not in self.valid:
-                print("Argumento Inválido. Há caracteres inválidos no argumento.")
-                self.error = True
-                break
-            if i == 0:
-                if self.txt[i] in "-+":
-                    print("Argumento Inválido. Há problemas com os sinais.")
-                    self.error = True
-                    break
+
+class Tokenizer:
+    def __init__(self, src):
+        self.origin = src
+        self.position = 0
+        self.tokens = []
+
+    def tokenize(self):
+        token_value = ""
+        last_char = ""
+        while self.position <= len(self.origin):
+            if self.position == len(self.origin):
+                if last_char.isdigit():
+                    self.tokens.append(Token(int(token_value), "INT"))
+                    token_value = ""
+                    self.tokens.append(Token("", "EOF"))
                 else:
-                    self.list_sign.append(1)
-                    self.support += self.txt[i]
+                    raise ValueError("Last token must be a number")
+            elif self.origin[self.position].isdigit():
+                token_value += self.origin[self.position]
+                last_char = self.origin[self.position]
+            elif self.origin[self.position] == "+":
+                if last_char.isdigit():
+                    self.tokens.append(Token(int(token_value), "INT"))
+                    token_value = ""
+                    self.tokens.append(Token("+", "PLUS"))
+                    last_char = "+"
+                else:
+                    raise ValueError("Operators must have numbers between them")
+            elif self.origin[self.position] == "-":
+                if last_char.isdigit():
+                    self.tokens.append(Token(int(token_value), "INT"))
+                    token_value = ""
+                    self.tokens.append(Token("-", "MINUS"))
+                    last_char = "-"
+                else:
+                    raise ValueError("Operators must have numbers between them")
+            elif self.origin[self.position] == " ":
+                pass
             else:
-                if self.txt[i] in "+-":
-                    self.support += " "
-                    if self.txt[i] == "+":
-                        self.list_sign.append(1)
-                    else:
-                        self.list_sign.append(-1)
-                else:
-                    self.support += self.txt[i]
+                raise ValueError("Input contains invalid characters")
+            self.position += 1
+        return self.tokens
 
-        self.list_num = self.support.split()
 
-        if len(self.list_sign) != len(self.list_num):
-            print("Argumento Inválido. Há problemas com os sinais.")
-            self.error = True
+class Parser:
+    def __init__(self):
+        self.result = 0
+        self.tokens = None
 
-    def calculate(self):
-        if not self.error:
-            for num, sign in zip(self.list_num, self.list_sign):
-                self.result += sign * int(num)
-            print(f"Resultado: {calc.result}")
+    def parse(self, objs):
+        self.tokens = objs
+        sign = 1
+        for token in self.tokens:
+            if token.type == "INT":
+                self.result += sign * int(token.value)
+            elif token.type == "PLUS":
+                sign = 1
+            elif token.type == "MINUS":
+                sign = -1
+            elif token.type == "EOF":
+                break
+            else:
+                raise ValueError("Token type not allowed")
+        return self.result
 
 
 if __name__ == "__main__":
@@ -62,6 +86,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    calc = Calculator()
-    calc.parse(args.equation)
-    calc.calculate()
+    tokens = Tokenizer(args.equation).tokenize()
+    for token in tokens:
+        print(token.value, token.type)
+    result = Parser().parse(tokens)
+
+    print(f"{result}")
