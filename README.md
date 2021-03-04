@@ -18,3 +18,7 @@ Vale destacar que não é permitido que o primeiro caractere não pode ser um si
 python main.py -e="-1+2"
 python main.py -e="+4 + 10"
 ~~~
+
+### Diagrama Sintático:
+
+<img src="Assets/images/DiagramaSintatico.png">
