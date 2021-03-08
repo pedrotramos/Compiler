@@ -1,3 +1,4 @@
+import sys
 import argparse
 
 
@@ -8,12 +9,13 @@ class Token:
 
 
 class Tokenizer:
-    def __init__(self, src):
-        self.origin = src
+    def __init__(self):
+        self.origin = ""
         self.position = 0
         self.tokens = []
 
-    def tokenize(self):
+    def tokenize(self, src):
+        self.origin = src
         token_value = ""
         last_char = ""
         while self.position <= len(self.origin):
@@ -34,7 +36,9 @@ class Tokenizer:
                     self.tokens.append(Token("+", "PLUS"))
                     last_char = "+"
                 else:
-                    raise ValueError("Operators must have numbers between them")
+                    raise ValueError(
+                        "An operator must always have numbers on both of its sides"
+                    )
             elif self.origin[self.position] == "-":
                 if last_char.isdigit():
                     self.tokens.append(Token(int(token_value), "INT"))
@@ -42,7 +46,29 @@ class Tokenizer:
                     self.tokens.append(Token("-", "MINUS"))
                     last_char = "-"
                 else:
-                    raise ValueError("Operators must have numbers between them")
+                    raise ValueError(
+                        "An operator must always have numbers on both of its sides"
+                    )
+            elif self.origin[self.position] == "*":
+                if last_char.isdigit():
+                    self.tokens.append(Token(int(token_value), "INT"))
+                    token_value = ""
+                    self.tokens.append(Token("*", "TIMES"))
+                    last_char = "-"
+                else:
+                    raise ValueError(
+                        "An operator must always have numbers on both of its sides"
+                    )
+            elif self.origin[self.position] == "/":
+                if last_char.isdigit():
+                    self.tokens.append(Token(int(token_value), "INT"))
+                    token_value = ""
+                    self.tokens.append(Token("/", "DIVIDED"))
+                    last_char = "-"
+                else:
+                    raise ValueError(
+                        "An operator must always have numbers on both of its sides"
+                    )
             elif self.origin[self.position] == " ":
                 pass
             else:
@@ -59,13 +85,23 @@ class Parser:
     def parse(self, objs):
         self.tokens = objs
         sign = 1
+        last_token = ""
         for token in self.tokens:
             if token.type == "INT":
-                self.result += sign * int(token.value)
+                if last_token == "DIVIDED":
+                    self.result /= int(token.value)
+                    last_token = ""
+                else:
+                    self.result += sign * int(token.value)
             elif token.type == "PLUS":
                 sign = 1
             elif token.type == "MINUS":
                 sign = -1
+            elif token.type == "TIMES":
+                sign = self.result
+                self.result = 0
+            elif token.type == "DIVIDED":
+                last_token = "DIVIDED"
             elif token.type == "EOF":
                 break
             else:
@@ -75,20 +111,12 @@ class Parser:
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(prefix_chars="-")
-
-    parser.add_argument(
-        "-e",
-        "--equation",
-        type=str,
-        help="Argumento que contém a equação a ser calculada",
-    )
-
-    args = parser.parse_args()
-
-    tokens = Tokenizer(args.equation).tokenize()
-    for token in tokens:
-        print(token.value, token.type)
-    result = Parser().parse(tokens)
-
-    print(f"{result}")
+    if len(sys.argv) > 1:
+        arg = ""
+        for i in range(1, len(sys.argv)):
+            arg += sys.argv[i]
+        tokens = Tokenizer().tokenize(arg)
+        result = Parser().parse(tokens)
+        print(f"{result}")
+    else:
+        raise argparse.ArgumentError("The program needs an argument to compile")
