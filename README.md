@@ -6,7 +6,6 @@ Esse compilador funciona somente para argumentos de entrada que buscam calcular 
 
 ~~~
 python main.py " 1    -1+2"
-python main.py  1    -1+2
 ~~~
 
 Assim o programa exibirá na tela como saída o resultado da equação, que no exemplo anterior é 2.
@@ -17,9 +16,12 @@ Vale destacar que não é permitido que o primeiro caractere não pode ser um si
 
 ~~~
 python main.py "-1+2"
-python main.py +4 + 10
 ~~~
 
 ### Diagrama Sintático:
 
-<img src="Assets/images/DiagramaSintatico.png">
+<img src="Assets/images/DiagramaSintatico.png"/>
+
+### EBNF:
+
+<img src="Assets/images/EBNF.png"/>
