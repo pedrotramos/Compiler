@@ -1,9 +1,10 @@
 import sys
 import argparse
+import re
 
 
 class Token:
-    def __init__(self, token_value, token_type):
+    def __init__(self, token_type, token_value):
         self.type = token_type
         self.value = token_value
 
@@ -16,97 +17,66 @@ class Tokenizer:
 
     def tokenize(self, src):
         self.origin = src
-        token_value = ""
-        last_char = ""
-        while self.position <= len(self.origin):
-            if self.position == len(self.origin):
-                if last_char.isdigit():
-                    self.tokens.append(Token(int(token_value), "INT"))
-                    token_value = ""
-                    self.tokens.append(Token("", "EOF"))
-                else:
-                    raise ValueError("Last token must be a number")
-            elif self.origin[self.position].isdigit():
-                token_value += self.origin[self.position]
-                last_char = self.origin[self.position]
-            elif self.origin[self.position] == "+":
-                if last_char.isdigit():
-                    self.tokens.append(Token(int(token_value), "INT"))
-                    token_value = ""
-                    self.tokens.append(Token("+", "PLUS"))
-                    last_char = "+"
-                else:
-                    raise ValueError(
-                        "An operator must always have numbers on both of its sides"
-                    )
-            elif self.origin[self.position] == "-":
-                if last_char.isdigit():
-                    self.tokens.append(Token(int(token_value), "INT"))
-                    token_value = ""
-                    self.tokens.append(Token("-", "MINUS"))
-                    last_char = "-"
-                else:
-                    raise ValueError(
-                        "An operator must always have numbers on both of its sides"
-                    )
-            elif self.origin[self.position] == "*":
-                if last_char.isdigit():
-                    self.tokens.append(Token(int(token_value), "INT"))
-                    token_value = ""
-                    self.tokens.append(Token("*", "TIMES"))
-                    last_char = "-"
-                else:
-                    raise ValueError(
-                        "An operator must always have numbers on both of its sides"
-                    )
-            elif self.origin[self.position] == "/":
-                if last_char.isdigit():
-                    self.tokens.append(Token(int(token_value), "INT"))
-                    token_value = ""
-                    self.tokens.append(Token("/", "DIVIDED"))
-                    last_char = "-"
-                else:
-                    raise ValueError(
-                        "An operator must always have numbers on both of its sides"
-                    )
-            elif self.origin[self.position] == " ":
-                pass
-            else:
-                raise ValueError("Input contains invalid characters")
-            self.position += 1
+        scanner = re.Scanner(
+            [
+                (r"[0-9]+", lambda scanner, token: Token("INT", token)),
+                (r"\+", lambda scanner, token: Token("PLUS", token)),
+                (r"\-", lambda scanner, token: Token("MINUS", token)),
+                (r"\s+", None),  # None == skip token.
+                (r".*", lambda scanner, token: Token("ERROR", token)),
+            ]
+        )
+        results, remainder = scanner.scan(self.origin)
+        self.tokens = results
+        self.tokens.append(Token("EOF", ""))
         return self.tokens
+
+    def getNextToken(self):
+        tk = self.tokens[self.position]
+        self.position += 1
+        return tk
 
 
 class Parser:
     def __init__(self):
-        self.result = 0
-        self.tokens = None
+        self.tokenizer = Tokenizer()
 
-    def parse(self, objs):
-        self.tokens = objs
-        sign = 1
-        last_token = ""
-        for token in self.tokens:
-            if token.type == "INT":
-                if last_token == "DIVIDED":
-                    self.result /= int(token.value)
-                    last_token = ""
-                else:
-                    self.result += sign * int(token.value)
-            elif token.type == "PLUS":
-                sign = 1
-            elif token.type == "MINUS":
-                sign = -1
-            elif token.type == "TIMES":
-                sign = self.result
-                self.result = 0
-            elif token.type == "DIVIDED":
-                last_token = "DIVIDED"
-            elif token.type == "EOF":
-                break
-            else:
-                raise ValueError("Token type not allowed")
-        return self.result
+    def parse(self):
+        token = self.tokenizer.getNextToken()
+        if token.type == "INT":
+            result = int(token.value)
+            token = self.tokenizer.getNextToken()
+            while token.type != "EOF":
+                if token.type == "ERROR":
+                    raise ValueError("Há caracteres inválidos na entrada")
+                elif token.type == "PLUS":
+                    token = self.tokenizer.getNextToken()
+                    if token.type == "INT":
+                        result += int(token.value)
+                    else:
+                        raise ValueError(
+                            "O sinal de soma deve ser seguido de um número"
+                        )
+                elif token.type == "MINUS":
+                    token = self.tokenizer.getNextToken()
+                    if token.type == "INT":
+                        result -= int(token.value)
+                    else:
+                        raise ValueError(
+                            "O sinal de subtração deve ser seguido de um número"
+                        )
+                elif token.type == "INT":
+                    raise ValueError(
+                        "Há números diferentes que não possuem operador entre eles"
+                    )
+                token = self.tokenizer.getNextToken()
+            return result
+        else:
+            raise ValueError("O primeiro token deve ser um número")
+
+    def run(self, src):
+        self.tokenizer.tokenize(src)
+        return self.parse()
 
 
 if __name__ == "__main__":
@@ -115,8 +85,7 @@ if __name__ == "__main__":
         arg = ""
         for i in range(1, len(sys.argv)):
             arg += sys.argv[i]
-        tokens = Tokenizer().tokenize(arg)
-        result = Parser().parse(tokens)
+        result = Parser().run(arg)
         print(f"{result}")
     else:
         raise argparse.ArgumentError("The program needs an argument to compile")
