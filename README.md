@@ -20,4 +20,8 @@ python main.py "-1+2"
 
 ### Diagrama Sintático:
 
-<img src="Assets/images/DiagramaSintatico.png">
+<img src="Assets/images/DiagramaSintatico.png"/>
+
+### EBNF:
+
+<img src="Assets/images/EBNF.png"/>
