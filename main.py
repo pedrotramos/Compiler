@@ -39,8 +39,6 @@ class Tokenizer:
         )
         results = scanner.scan(self.origin)[0]
         self.tokens = results
-        for token in results:
-            print((token.value, token.type))
         self.tokens.append(Token("EOF", ""))
         return self.tokens
 
