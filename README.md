@@ -29,11 +29,11 @@ python main.py "-1+2"
 ### EBNF Atual:
 
 ~~~
-FULL_EXPRESSION = EXPRESSION, {("+", "-", "*", "/"), EXPRESSION} ;
+EXPRESSION = TERM, { ("+" | "-"), TERM } ;
 
-EXPRESSION = TERM, {("+" | "-"), TERM} ;
+TERM = FACTOR, { ("*" | "/"), FACTOR } ;
 
-TERM = NUMBER, {("*" | "/"), NUMBER} ;
+FACTOR = ("+" | "-"), FACTOR | "(", EXPRESSION,")" | NUMBER ;
 
 NUMBER = DIGIT, {DIGIT} ;
 

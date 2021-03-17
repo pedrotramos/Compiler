@@ -23,82 +23,95 @@ class Tokenizer:
         self.origin = ""
         self.position = 0
         self.tokens = []
+        self.actual = None
 
     def tokenize(self, src):
         self.origin = src
         scanner = re.Scanner(
             [
-                (r"[0-9]+", lambda scanner, token: Token("INT", token)),
+                (r"[0-9]+", lambda scanner, token: Token("INT", int(token))),
                 (r"\+", lambda scanner, token: Token("PLUS", token)),
                 (r"\-", lambda scanner, token: Token("MINUS", token)),
                 (r"\*", lambda scanner, token: Token("TIMES", token)),
                 (r"/", lambda scanner, token: Token("DIVIDED", token)),
+                (r"\(", lambda scanner, token: Token("INIT_PARENTHESIS", token)),
+                (r"\)", lambda scanner, token: Token("END_PARENTHESIS", token)),
                 (r"\s+", None),  # None == skip token.
                 (r".*", lambda scanner, token: Token("ERROR", token)),
             ]
         )
         results = scanner.scan(self.origin)[0]
+        # for result in results:
+        #     print(result.type, result.value)
         self.tokens = results
         self.tokens.append(Token("EOF", ""))
         return self.tokens
 
-    def getNextToken(self):
-        tk = self.tokens[self.position]
+    def nextToken(self):
+        self.actual = self.tokens[self.position]
         self.position += 1
-        return tk
 
 
 class Parser:
     def __init__(self):
         self.tokenizer = Tokenizer()
 
-    def multDivFirst(self):
-        token = self.tokenizer.getNextToken()
-        if token.type == "INT":
-            result = int(token.value)
-            token = self.tokenizer.getNextToken()
-            while token.type not in ["PLUS", "MINUS", "EOF"]:
-                if token.type == "ERROR":
-                    raise ValueError("Há caracteres inválidos na entrada")
-                elif token.type == "TIMES":
-                    token = self.tokenizer.getNextToken()
-                    if token.type == "INT":
-                        result *= int(token.value)
-                    else:
-                        raise ValueError("Um operador deve ser seguido de um número")
-                elif token.type == "DIVIDED":
-                    token = self.tokenizer.getNextToken()
-                    if token.type == "INT":
-                        result /= int(token.value)
-                    else:
-                        raise ValueError("Um operador deve ser seguido de um número")
-                elif token.type == "INT":
-                    raise ValueError(
-                        "Há números diferentes que não possuem operador entre eles"
-                    )
-                token = self.tokenizer.getNextToken()
-            return result, token
-        else:
-            raise ValueError("Há um token em posição inválida")
+    def parseFactor(self):
+        self.tokenizer.nextToken()
+        if self.tokenizer.actual.type == "INT":
+            return self.tokenizer.actual.value
+        elif self.tokenizer.actual.type in ["PLUS", "MINUS"]:
+            if self.tokenizer.actual.type == "PLUS":
+                return self.parseFactor()
+            else:
+                return -(self.parseFactor())
+        elif self.tokenizer.actual.type == "INIT_PARENTHESIS":
+            expression = self.parseExpression()
+            if self.tokenizer.actual.type == "END_PARENTHESIS":
+                return expression
+            else:
+                raise ValueError("Não foi possível fechar os parênteses")
 
-    def parse(self):
-        value, token = self.multDivFirst()
+    def parseTerm(self):
+        value = self.parseFactor()
         result = value
-        while token.type != "EOF":
-            if token.type == "ERROR":
+        self.tokenizer.nextToken()
+        while self.tokenizer.actual.type in ["TIMES", "DIVIDED", "ERROR"]:
+            if self.tokenizer.actual.type == "ERROR":
                 raise ValueError("Há caracteres inválidos na entrada")
-            elif token.type == "PLUS":
-                value, token = self.multDivFirst()
-                result += value
-            elif token.type == "MINUS":
-                value, token = self.multDivFirst()
-                result -= value
-            elif token.type == "INT":
+            elif self.tokenizer.actual.type == "TIMES":
+                value = self.parseFactor()
+                result *= value
+            elif self.tokenizer.actual.type == "DIVIDED":
+                value = self.parseFactor()
+                result /= value
+            elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
                     "Há números diferentes que não possuem operador entre eles"
                 )
-        result = int(result)
-        return result
+            self.tokenizer.nextToken()
+        return int(result)
+
+    def parseExpression(self):
+        result = self.parseTerm()
+        while self.tokenizer.actual.type in ["PLUS", "MINUS", "ERROR"]:
+            if self.tokenizer.actual.type == "ERROR":
+                raise ValueError("Há caracteres inválidos na entrada")
+            elif self.tokenizer.actual.type == "PLUS":
+                value = self.parseTerm()
+                result += value
+            elif self.tokenizer.actual.type == "MINUS":
+                value = self.parseTerm()
+                result -= value
+            elif self.tokenizer.actual.type == "INT":
+                raise ValueError(
+                    "Há números diferentes que não possuem operador entre eles"
+                )
+        return int(result)
+
+    def parse(self):
+        result = self.parseExpression()
+        return int(result)
 
     def run(self, src):
         self.tokenizer.tokenize(src)
