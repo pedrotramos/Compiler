@@ -97,6 +97,7 @@ class Parser:
                 raise ValueError(
                     "Há números diferentes que não possuem operador entre eles"
                 )
+        result = int(result)
         return result
 
     def run(self, src):
