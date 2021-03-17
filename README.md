@@ -26,10 +26,16 @@ python main.py "-1+2"
 
 <img src="Assets/images/EBNF.png"/>
 
-### A EBNF Atual:
+### EBNF Atual:
 
-```EXPRESSION = NUMBER, {("+", "-", "*", "/"), NUMBER} ;```
+~~~
+FULL_EXPRESSION = EXPRESSION, {("+", "-", "*", "/"), EXPRESSION} ;
 
-```NUMBER = DIGIT, {DIGIT} ;```
+EXPRESSION = TERM, {("+" | "-"), TERM} ;
 
-```DIGIT = DIGIT = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;```
+TERM = NUMBER, {("*" | "/"), NUMBER} ;
+
+NUMBER = DIGIT, {DIGIT} ;
+
+DIGIT = DIGIT = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 ;
+~~~
