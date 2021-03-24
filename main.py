@@ -111,6 +111,8 @@ class Parser:
 
     def parse(self):
         result = self.parseExpression()
+        if self.tokenizer.actual.type != "EOF":
+            raise ValueError("Erro na equação")
         return int(result)
 
     def run(self, src):
