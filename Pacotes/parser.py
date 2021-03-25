@@ -29,7 +29,7 @@ class Parser:
             elif self.tokenizer.actual.type in ["TIMES", "DIVIDED"]:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseFactor()
-                tree = BinaryOperation(token_type, [firstChild, secondChild])
+                tree = BinaryOperation(token_type, [output, secondChild])
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -47,7 +47,7 @@ class Parser:
             elif self.tokenizer.actual.type in ["PLUS", "MINUS"]:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseTerm()
-                tree = BinaryOperation(token_type, [firstChild, secondChild])
+                tree = BinaryOperation(token_type, [output, secondChild])
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
