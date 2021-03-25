@@ -14,11 +14,11 @@ Caso na string de entrada haja caractéres que não sejam números, sinais de so
 
 ### Diagrama Sintático:
 
-<img src="Assets/images/DiagramaSintatico.png"/>
+<img src="Assets/DiagramaSintatico.png"/>
 
 ### Notação EBNF:
 
-<img src="Assets/images/EBNF.png"/>
+<img src="Assets/EBNF.png"/>
 
 ### EBNF Atual:
 
