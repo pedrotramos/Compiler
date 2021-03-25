@@ -1,6 +1,69 @@
+import re
 import sys
 import argparse
-import re
+
+
+class Node:
+    def __init__(self, val, child_list):
+        self.value = val
+        self.children = child_list
+
+    def evaluate(self):
+        pass
+
+
+class BinaryOperation(Node):
+    def __init__(self, val, child_list):
+        if len(child_list) != 2:
+            raise ValueError("Uma operação binária deve possuir dois nós filhos")
+        else:
+            super().__init__(val, child_list)
+
+    def evaluate(self):
+        node1 = self.children[0].evaluate()
+        node2 = self.children[1].evaluate()
+        if self.value == "PLUS":
+            return int(node1 + node2)
+        elif self.value == "MINUS":
+            return int(node1 - node2)
+        elif self.value == "TIMES":
+            return int(node1 * node2)
+        elif self.value == "DIVIDED":
+            return int(node1 / node2)
+        else:
+            raise ValueError("Operador binário com valor inválido")
+
+
+class UnaryOperation(Node):
+    def __init__(self, val, child_list):
+        if len(child_list) != 1:
+            raise ValueError("Uma operação unária deve ter apenas um nó filho")
+        else:
+            super().__init__(val, child_list)
+
+    def evaluate(self):
+        if self.value == "PLUS":
+            return int(self.children[0].evaluate())
+        elif self.value == "MINUS":
+            return int(-self.children[0].evaluate())
+        else:
+            raise ValueError("Operador unário com valor inválido")
+
+
+class IntegerValue(Node):
+    def __init__(self, val):
+        super().__init__(val, None)
+
+    def evaluate(self):
+        return self.value
+
+
+class NoOperation(Node):
+    def __init__(self):
+        super().__init__(None, None)
+
+    def evaluate(self):
+        return super().evaluate()
 
 
 class PreProcessor:
@@ -59,61 +122,57 @@ class Parser:
     def parseFactor(self):
         self.tokenizer.nextToken()
         if self.tokenizer.actual.type == "INT":
-            return self.tokenizer.actual.value
+            return IntegerValue(self.tokenizer.actual.value)
         elif self.tokenizer.actual.type in ["PLUS", "MINUS"]:
-            if self.tokenizer.actual.type == "PLUS":
-                return self.parseFactor()
-            else:
-                return -(self.parseFactor())
+            return UnaryOperation(self.tokenizer.actual.type, [self.parseFactor()])
         elif self.tokenizer.actual.type == "INIT_PARENTHESIS":
-            expression = self.parseExpression()
+            expression_tree = self.parseExpression()
             if self.tokenizer.actual.type == "END_PARENTHESIS":
-                return expression
+                return expression_tree
             else:
                 raise ValueError("Não foi possível fechar os parênteses")
 
     def parseTerm(self):
-        value = self.parseFactor()
-        result = value
+        firstChild = self.parseFactor()
+        output = firstChild
         self.tokenizer.nextToken()
         while self.tokenizer.actual.type in ["TIMES", "DIVIDED", "ERROR"]:
             if self.tokenizer.actual.type == "ERROR":
                 raise ValueError("Há caracteres inválidos na entrada")
-            elif self.tokenizer.actual.type == "TIMES":
-                value = self.parseFactor()
-                result *= value
-            elif self.tokenizer.actual.type == "DIVIDED":
-                value = self.parseFactor()
-                result /= value
+            elif self.tokenizer.actual.type in ["TIMES", "DIVIDED"]:
+                token_type = self.tokenizer.actual.type
+                secondChild = self.parseFactor()
+                tree = BinaryOperation(token_type, [firstChild, secondChild])
+                output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
                     "Há números diferentes que não possuem operador entre eles"
                 )
             self.tokenizer.nextToken()
-        return int(result)
+        return output
 
     def parseExpression(self):
-        result = self.parseTerm()
+        firstChild = self.parseTerm()
+        output = firstChild
         while self.tokenizer.actual.type in ["PLUS", "MINUS", "ERROR"]:
             if self.tokenizer.actual.type == "ERROR":
                 raise ValueError("Há caracteres inválidos na entrada")
-            elif self.tokenizer.actual.type == "PLUS":
-                value = self.parseTerm()
-                result += value
-            elif self.tokenizer.actual.type == "MINUS":
-                value = self.parseTerm()
-                result -= value
+            elif self.tokenizer.actual.type in ["PLUS", "MINUS"]:
+                token_type = self.tokenizer.actual.type
+                secondChild = self.parseTerm()
+                tree = BinaryOperation(token_type, [firstChild, secondChild])
+                output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
                     "Há números diferentes que não possuem operador entre eles"
                 )
-        return int(result)
+        return output
 
     def parse(self):
-        result = self.parseExpression()
+        tree = self.parseExpression()
         if self.tokenizer.actual.type != "EOF":
             raise ValueError("Erro na equação")
-        return int(result)
+        return tree.evaluate()
 
     def run(self, src):
         self.tokenizer.tokenize(src)
@@ -123,11 +182,15 @@ class Parser:
 if __name__ == "__main__":
 
     if len(sys.argv) > 1:
-        arg = ""
-        for i in range(1, len(sys.argv)):
-            arg += sys.argv[i]
-        txt = PreProcessor().filter(src=arg)
-        result = Parser().run(txt)
-        print(f"{result}")
+        if sys.argv[1].endswith(".c"):
+            with open(sys.argv[1], "r") as f:
+                arg = f.readline()
+            txt = PreProcessor().filter(src=arg)
+            result = Parser().run(txt)
+            print(f"{result}")
+        else:
+            raise argparse.ArgumentError(
+                "O argumento do programa deve ser um arquivo C"
+            )
     else:
-        raise argparse.ArgumentError("The program needs an argument to compile")
+        raise argparse.ArgumentError("O programa precisa de um argumento para rodar")
