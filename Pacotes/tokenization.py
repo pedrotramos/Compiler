@@ -16,9 +16,17 @@ class Tokenizer:
 
     def tokenize(self, src):
         self.origin = src
+
         scanner = re.Scanner(
             [
+                (r"println", lambda scanner, token: Token("PRINTLN", token)),
+                (
+                    r"[a-zA-Z_$][a-zA-Z_$0-9]*",
+                    lambda scanner, token: Token("VAR", token),
+                ),
                 (r"[0-9]+", lambda scanner, token: Token("INT", int(token))),
+                (r"\;", lambda scanner, token: Token("EOL", token)),
+                (r"\=", lambda scanner, token: Token("EQUALS", token)),
                 (r"\+", lambda scanner, token: Token("PLUS", token)),
                 (r"\-", lambda scanner, token: Token("MINUS", token)),
                 (r"\*", lambda scanner, token: Token("TIMES", token)),
@@ -32,10 +40,11 @@ class Tokenizer:
         results = scanner.scan(self.origin)[0]
         # for result in results:
         #     print(result.type, result.value)
+        results.append(Token("EOF", ""))
         self.tokens = results
-        self.tokens.append(Token("EOF", ""))
         return self.tokens
 
     def nextToken(self):
-        self.actual = self.tokens[self.position]
-        self.position += 1
+        if self.position + 1 <= len(self.tokens):
+            self.actual = self.tokens[self.position]
+            self.position += 1
