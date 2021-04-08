@@ -1,3 +1,5 @@
-a = 1 + 1;
-b = a * a + 3;
-println(b + a);
+a = 2;
+b = 8;
+c = a;
+delta = (b * b - 4 * a * c);
+println(delta);
