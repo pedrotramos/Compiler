@@ -9,10 +9,9 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1].endswith(".c"):
             with open(sys.argv[1], "r") as f:
-                arg = f.readline()
+                arg = f.read()
             txt = PreProcessor().filter(src=arg)
             result = Parser().run(txt)
-            print(f"{result}")
         else:
             raise argparse.ArgumentError(
                 "O argumento do programa deve ser um arquivo C"
