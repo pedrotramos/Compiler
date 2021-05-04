@@ -19,6 +19,10 @@ class Tokenizer:
 
         scanner = re.Scanner(
             [
+                (r"while", lambda scanner, token: Token("WHILE", token)),
+                (r"if", lambda scanner, token: Token("IF", token)),
+                (r"else", lambda scanner, token: Token("ELSE", token)),
+                (r"readln", lambda scanner, token: Token("READLN", token)),
                 (r"println", lambda scanner, token: Token("PRINTLN", token)),
                 (
                     r"[a-zA-Z_$][a-zA-Z_$0-9]*",
@@ -26,6 +30,12 @@ class Tokenizer:
                 ),
                 (r"[0-9]+", lambda scanner, token: Token("INT", int(token))),
                 (r"\;", lambda scanner, token: Token("EOL", token)),
+                (r"\&\&", lambda scanner, token: Token("AND", token)),
+                (r"\|\|", lambda scanner, token: Token("OR", token)),
+                (r"\!", lambda scanner, token: Token("NOT", token)),
+                (r"\=\=", lambda scanner, token: Token("EQ_COMPARE", token)),
+                (r"\>", lambda scanner, token: Token("GT_COMPARE", token)),
+                (r"\<", lambda scanner, token: Token("LT_COMPARE", token)),
                 (r"\=", lambda scanner, token: Token("EQUALS", token)),
                 (r"\+", lambda scanner, token: Token("PLUS", token)),
                 (r"\-", lambda scanner, token: Token("MINUS", token)),
@@ -33,6 +43,8 @@ class Tokenizer:
                 (r"/", lambda scanner, token: Token("DIVIDED", token)),
                 (r"\(", lambda scanner, token: Token("INIT_PARENTHESIS", token)),
                 (r"\)", lambda scanner, token: Token("END_PARENTHESIS", token)),
+                (r"\{", lambda scanner, token: Token("INIT_BLOCK", token)),
+                (r"\}", lambda scanner, token: Token("END_BLOCK", token)),
                 (r"\s+", None),  # None == skip token.
                 (r".*", lambda scanner, token: Token("ERROR", token)),
             ]

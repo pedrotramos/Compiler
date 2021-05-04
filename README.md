@@ -21,10 +21,17 @@ Sendo ```arquivo.c``` o arquivo que contém a equação a ser resolvida. Assim, 
 ### EBNF Atual:
 
 ~~~
-BLOCK = { COMMAND } ;
-COMMAND = ( λ | ASSIGNMENT | PRINT), ";" ;
-ASSIGNMENT = IDENTIFIER, "=", EXPRESSION ;
-PRINT = "println", "(", EXPRESSION, ")" ;
+BLOCK = "{", { COMMAND }, "}" ;
+COMMAND = ((λ | ASSIGNMENT | PRINT), ";" | LOOP | IF-ELSE) ;
+LOOP = "while", "(", OR_EXPRESSION, ")", BLOCK ;
+IF-ELSE = "if", "(", OR_EXPRESSION, ")", BLOCK, ["else", BLOCK] ;
+ASSIGNMENT = IDENTIFIER, "=", (OR_EXPRESSION | READ) ;
+READ = "readln", "(", ")" ;
+PRINT = "println", "(", OR_EXPRESSION, ")" ;
+OR_EXPRESSION = AND_EXPRESSION, { "||", AND_EXPRESSION } ;
+AND_EXPRESSION = EQ_EXPRESSION, { "&&", EQ_EXPRESSION } ;
+EQ_EXPRESSION = REL_EXPRESSION, { "==", REL_EXPRESSION } ;
+REL_EXPRESSION = EXPRESSION, { (">" | "<"), EXPRESSION } ;
 EXPRESSION = TERM, { ("+" | "-"), TERM } ;
 TERM = FACTOR, { ("*" | "/"), FACTOR } ;
 FACTOR = (("+" | "-"), FACTOR) | NUMBER | "(", EXPRESSION, ")" | IDENTIFIER ;

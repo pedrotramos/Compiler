@@ -1,5 +1,26 @@
-a = 2;
-b = (3 - 2) * ((4 + 12) / 2); /* 8 */
-c = a + 1;                    /* 3 */
-delta = (b * b - 4 * a * c);  /* Delta da Fórmula de Bhaskara */
-println(delta);
+{
+    a = 2;        /* Verifica se uma equação de segundo grau possui raízes */
+    b = readln(); /* Só depende do input do termo b da esquação */
+    c = 2;
+    delta = (b * b) - (4 * a * c);
+    if (delta == 0 || delta > 0)
+    {
+        println(1);
+    }
+    else
+    {
+        println(0);
+    }
+
+    i = 1;
+    while (!(i > 4))
+    {
+        j = 4;
+        while (j > 1 || j == 1)
+        {
+            println(i * j);
+            j = j - 1;
+        }
+        i = i + 1;
+    }
+}
