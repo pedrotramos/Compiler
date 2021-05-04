@@ -2,7 +2,7 @@
 
 ### Funcionamento do compilador:
 
-Esse compilador funciona somente para argumentos de entrada que buscam calcular operações matemáticas de soma, subtração, multiplicação, divisão, atribuições a variáveis e comandos de *println*. O programa deve ser executado da seguinte forma:
+Esse compilador funciona somente para argumentos de entrada que buscam calcular operações aritiméticas, booleanas e relativas, atribuições a variáveis e comandos de *println*, *readln*, *while* e *if-else*. O programa deve ser executado da seguinte forma:
 
 ~~~
 python main.py "arquivo.c"
