@@ -176,7 +176,16 @@ class Parser:
             else:
                 raise ("Erro na definição de variável")
         elif self.tokenizer.actual.type == "WHILE":
-            condition = self.parseOrExpression()
+            self.tokenizer.nextToken()
+            if self.tokenizer.actual.type == "INIT_PARENTHESIS":
+                condition = self.parseOrExpression()
+                if self.tokenizer.actual.type != "END_PARENTHESIS":
+                    raise ValueError("Não foi possível fechar os parênteses")
+            else:
+                raise ValueError(
+                    "Um WHILE deve ser seguido de uma expressão entre parênteses"
+                )
+            self.tokenizer.nextToken()
             command = self.parseCommand()
             output = WhileOperation("WHILE", [condition, command])
         elif self.tokenizer.actual.type == "IF":
