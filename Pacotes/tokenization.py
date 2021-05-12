@@ -19,6 +19,11 @@ class Tokenizer:
 
         scanner = re.Scanner(
             [
+                (r"int", lambda scanner, token: Token("TYPE", token)),
+                (r"bool", lambda scanner, token: Token("TYPE", token)),
+                (r"string", lambda scanner, token: Token("TYPE", token)),
+                (r"true", lambda scanner, token: Token("BOOL", token)),
+                (r"false", lambda scanner, token: Token("BOOL", token)),
                 (r"while", lambda scanner, token: Token("WHILE", token)),
                 (r"if", lambda scanner, token: Token("IF", token)),
                 (r"else", lambda scanner, token: Token("ELSE", token)),
@@ -28,6 +33,7 @@ class Tokenizer:
                     r"[a-zA-Z_$][a-zA-Z_$0-9]*",
                     lambda scanner, token: Token("VAR", token),
                 ),
+                (r"\".*\"", lambda scanner, token: Token("STRING", token)),
                 (r"[0-9]+", lambda scanner, token: Token("INT", int(token))),
                 (r"\;", lambda scanner, token: Token("EOL", token)),
                 (r"\&\&", lambda scanner, token: Token("AND", token)),

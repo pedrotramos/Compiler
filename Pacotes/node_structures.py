@@ -28,7 +28,7 @@ class PrintOperation(Node):
             super().__init__(val, child_list)
 
     def evaluate(self):
-        print(self.children[0].evaluate())
+        print(self.children[0].evaluate()[0], self.children[0].evaluate()[-1])
 
 
 class ReadOperation(Node):
@@ -40,7 +40,8 @@ class ReadOperation(Node):
 
     def evaluate(self):
         try:
-            return int(input())
+            val = int(input())
+            return (type(val), val)
         except:
             raise ("O valor inputado deve ser um número inteiro")
 
@@ -55,41 +56,54 @@ class BinaryOperation(Node):
 
     def evaluate(self):
         if self.value == "EQUALS":
-            self.symbols.setSymbol(self.children[0], self.children[1].evaluate())
+            self.symbols.setSymbol(
+                self.children[0],
+                self.children[1].evaluate()[1],
+                self.symbols.getSymbol(self.children[0])[0],
+            )
             return
         node1 = self.children[0].evaluate()
         node2 = self.children[1].evaluate()
+        if type(node1[0]) == type("pedro") or type(node2[0]) == type("pedro"):
+            raise ValueError(
+                "Operações binárias só podem ser feitas entre 'int' e 'bool'"
+            )
         if self.value == "PLUS":
-            return int(node1 + node2)
+            soma = node1[1] + node2[1]
+            return (type(soma), soma)
         elif self.value == "MINUS":
-            return int(node1 - node2)
+            subtracao = node1[1] - node2[1]
+            return (type(subtracao), subtracao)
         elif self.value == "TIMES":
-            return int(node1 * node2)
+            multiplicacao = int(node1[1] * node2[1])
+            return (type(multiplicacao), multiplicacao)
         elif self.value == "DIVIDED":
-            return int(node1 / node2)
+            divisao = int(node1[1] / node2[1])
+            return (type(divisao), divisao)
         elif self.value == "EQ_COMPARE":
-            if node1 == node2:
-                return 1
+            eq_comp = node1[1] == node2[1]
+            if eq_comp:
+                return (type(eq_comp), 1)
             else:
-                return 0
+                return (type(eq_comp), 0)
         elif self.value == "GT_COMPARE":
-            if node1 > node2:
-                return 1
+            gt_comp = node1[1] > node2[1]
+            if gt_comp:
+                return (type(gt_comp), 1)
             else:
-                return 0
+                return (type(gt_comp), 0)
         elif self.value == "LT_COMPARE":
-            if node1 < node2:
-                return 1
+            lt_comp = node1[1] < node2[1]
+            if lt_comp:
+                return (type(lt_comp), 1)
             else:
-                return 0
+                return (type(lt_comp), 0)
         elif self.value == "AND":
-            return node1 and node2
+            and_op = node1[1] and node2[1]
+            return (type(and_op), and_op)
         elif self.value == "OR":
-            return node1 or node2
-        elif self.value == "EQUALS":
-            print(node1, node2)
-            self.symbols.setSymbol(node1, node2)
-            return self.symbols.getSymbol(node1)
+            or_op = node1[1] or node2[1]
+            return (type(or_op), or_op)
         else:
             raise ValueError("Operador binário com valor inválido")
 
@@ -103,11 +117,14 @@ class UnaryOperation(Node):
 
     def evaluate(self):
         if self.value == "PLUS":
-            return int(self.children[0].evaluate())
+            plus = int(self.children[0].evaluate())
+            return (plus[0], plus[1])
         elif self.value == "MINUS":
-            return int(-self.children[0].evaluate())
+            minus = int(-self.children[0].evaluate())
+            return (minus[0], minus[1])
         elif self.value == "NOT":
-            return not self.children[0].evaluate()
+            not_op = not self.children[0].evaluate()
+            return (not_op[0], not_op[1])
         else:
             raise ValueError("Operador unário com valor inválido")
 
@@ -117,7 +134,37 @@ class IntegerValue(Node):
         super().__init__(val, None)
 
     def evaluate(self):
-        return self.value
+        return (type(self.value), self.value)
+
+
+class StringValue(Node):
+    def __init__(self, val):
+        super().__init__(val, None)
+
+    def evaluate(self):
+        return (type(self.value), self.value)
+
+
+class BoolValue(Node):
+    def __init__(self, val):
+        if val == "true":
+            boolVal = True
+        elif val == "false":
+            boolVal = False
+        else:
+            if type(val) == type(0):
+                if val == 0:
+                    boolVal = False
+                else:
+                    boolVal = True
+            else:
+                raise ValueError(
+                    "não é possível atribuir esse tipo de valor a uma variável booleana"
+                )
+        super().__init__(boolVal, None)
+
+    def evaluate(self):
+        return (type(self.value), self.value)
 
 
 class WhileOperation(Node):
