@@ -1,6 +1,6 @@
 {
-    int a = true;
-    string b = "porra!";
-    println(a);
-    println(b);
+    string x = "pedro";
+    string y = "pedro";
+    bool z = x == y;
+    println(z);
 }

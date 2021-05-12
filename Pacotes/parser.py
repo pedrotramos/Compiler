@@ -168,18 +168,18 @@ class Parser:
             val_type = self.tokenizer.actual.value
             if val_type == "string":
                 val = ""
-            elif val_type = "int":
+            elif val_type == "int":
                 val = 0
             else:
                 val = False
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "VAR":
                 output = Variable(self.tokenizer.actual.value, self.symbols)
+                self.symbols.setSymbol(output.value, val, val_type)
                 self.tokenizer.nextToken()
                 if self.tokenizer.actual.type == "EQUALS":
                     token_type = self.tokenizer.actual.type
                     secondChild = self.parseOrExpression()
-                    self.symbols.setSymbol(output.value, val, val_type)
                     tree = BinaryOperation(
                         token_type, [output.value, secondChild], self.symbols
                     )
@@ -188,8 +188,8 @@ class Parser:
                         raise ("Uma atribuição deve terminar com ;")
                     else:
                         self.tokenizer.nextToken()
-                else:
-                    raise ValueError("Erro na definição de variável")
+                elif self.tokenizer.actual.type == "EOL":
+                    self.tokenizer.nextToken()
             else:
                 raise ValueError("Erro na definição de variável")
         elif self.tokenizer.actual.type == "VAR":
@@ -199,7 +199,7 @@ class Parser:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseOrExpression()
                 self.symbols.setSymbol(
-                    output.value, 0, self.symbols.getSymbol(output.value)
+                    output.value, 0, self.symbols.getSymbol(output.value)[0]
                 )
                 tree = BinaryOperation(
                     token_type, [output.value, secondChild], self.symbols

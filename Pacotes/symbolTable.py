@@ -23,7 +23,6 @@ class SymbolTable:
             except:
                 raise TypeError("Erro de tipagem")
         elif val_type in ["string", type("pedro")]:
-            print("STRING", type(val), val)
             finalType = type("pedro")
             if type(val) == finalType:
                 self.symbols[s] = {"value": val, "type": finalType}

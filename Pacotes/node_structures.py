@@ -28,7 +28,10 @@ class PrintOperation(Node):
             super().__init__(val, child_list)
 
     def evaluate(self):
-        print(self.children[0].evaluate()[0], self.children[0].evaluate()[-1])
+        if self.children[0].evaluate()[0] == type("pedro"):
+            print(self.children[0].evaluate()[-1][1:-1])
+        else:
+            print(self.children[0].evaluate()[-1])
 
 
 class ReadOperation(Node):
@@ -69,15 +72,23 @@ class BinaryOperation(Node):
                 "Operações binárias só podem ser feitas entre 'int' e 'bool'"
             )
         if self.value == "PLUS":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer soma de strings")
             soma = node1[1] + node2[1]
             return (type(soma), soma)
         elif self.value == "MINUS":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer subtração de strings")
             subtracao = node1[1] - node2[1]
             return (type(subtracao), subtracao)
         elif self.value == "TIMES":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer multiplicação de strings")
             multiplicacao = int(node1[1] * node2[1])
             return (type(multiplicacao), multiplicacao)
         elif self.value == "DIVIDED":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer divisão de strings")
             divisao = int(node1[1] / node2[1])
             return (type(divisao), divisao)
         elif self.value == "EQ_COMPARE":
@@ -99,9 +110,13 @@ class BinaryOperation(Node):
             else:
                 return (type(lt_comp), 0)
         elif self.value == "AND":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer operação and de strings")
             and_op = node1[1] and node2[1]
             return (type(and_op), and_op)
         elif self.value == "OR":
+            if node1[0] == type("pedro") or node2[0] == type("pedro"):
+                raise TypeError("Não é possível fazer operação or de strings")
             or_op = node1[1] or node2[1]
             return (type(or_op), or_op)
         else:
