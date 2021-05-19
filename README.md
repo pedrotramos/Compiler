@@ -1,5 +1,9 @@
 # Compilador
 
+## Status dos testes
+
+![git_status](http://3.129.230.99/svg/pedrotramos/LogComp/)
+
 ### Funcionamento do compilador:
 
 Esse compilador funciona somente para argumentos de entrada que buscam calcular operações aritiméticas, booleanas e relativas, atribuições a variáveis e comandos de *println*, *readln*, *while* e *if-else*. O programa deve ser executado da seguinte forma:
