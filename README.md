@@ -2,7 +2,7 @@
 
 ## Status dos testes
 
-![svg](http://3.129.230.99/svg/pedrotramos/Compiler/)
+![git_status](http://3.129.230.99/svg/pedrotramos/LogComp/)
 
 ### Funcionamento do compilador:
 
