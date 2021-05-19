@@ -1,6 +1,6 @@
 # Compilador
 
-![git status](http://3.129.230.99/svg/pedrotramos/Compiler/)
+![svg](http://3.129.230.99/svg/pedrotramos/Compiler/)
 
 ### Funcionamento do compilador:
 
