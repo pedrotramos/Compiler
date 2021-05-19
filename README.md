@@ -1,5 +1,7 @@
 # Compilador
 
+## Status dos testes
+
 ![svg](http://3.129.230.99/svg/pedrotramos/Compiler/)
 
 ### Funcionamento do compilador:
