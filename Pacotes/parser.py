@@ -1,4 +1,3 @@
-from ast import parse
 from .tokenization import Tokenizer
 from .node_structures import (
     BlockOperation,
