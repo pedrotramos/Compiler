@@ -132,14 +132,14 @@ class UnaryOperation(Node):
 
     def evaluate(self):
         if self.value == "PLUS":
-            plus = int(self.children[0].evaluate())
+            plus = self.children[0].evaluate()
             return (plus[0], plus[1])
         elif self.value == "MINUS":
-            minus = int(-self.children[0].evaluate())
-            return (minus[0], minus[1])
+            minus = self.children[0].evaluate()
+            return (minus[0], -minus[1])
         elif self.value == "NOT":
-            not_op = not self.children[0].evaluate()
-            return (not_op[0], not_op[1])
+            not_op = self.children[0].evaluate()
+            return (not_op[0], not not_op[1])
         else:
             raise ValueError("Operador unário com valor inválido")
 
@@ -190,7 +190,9 @@ class WhileOperation(Node):
             super().__init__(val, child_list)
 
     def evaluate(self):
-        while self.children[0].evaluate():
+        while self.children[0].evaluate()[1]:
+            if self.children[0].evaluate()[0] == type("pedro"):
+                raise ValueError("O resultado de uma condição não pode ser uma STRING")
             self.children[1].evaluate()
 
 
@@ -204,12 +206,15 @@ class IfOperation(Node):
             super().__init__(val, child_list)
 
     def evaluate(self):
-        condition = condition = self.children[0].evaluate()
-        if condition:
-            self.children[1].evaluate()
+        condition = self.children[0].evaluate()
+        if condition[0] != type("pedro"):
+            if condition[1]:
+                self.children[1].evaluate()
+            else:
+                if len(self.children) == 3:
+                    self.children[2].evaluate()
         else:
-            if len(self.children) == 3:
-                self.children[2].evaluate()
+            raise ValueError("O resultado de uma condição não pode ser uma STRING")
 
 
 class NoOperation(Node):

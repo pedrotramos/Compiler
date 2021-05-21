@@ -174,6 +174,13 @@ class Parser:
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "VAR":
                 output = Variable(self.tokenizer.actual.value, self.symbols)
+                exists = None
+                try:
+                    exists = self.symbols.getSymbol(output.value)
+                except:
+                    pass
+                if exists != None:
+                    raise ValueError("Não é possível redeclarar variáveis")
                 self.symbols.setSymbol(output.value, val, val_type)
                 self.tokenizer.nextToken()
                 if self.tokenizer.actual.type == "EQUALS":
@@ -184,7 +191,7 @@ class Parser:
                     )
                     output = tree
                     if self.tokenizer.actual.type != "EOL":
-                        raise ("Uma atribuição deve terminar com ;")
+                        raise ValueError("Uma atribuição deve terminar com ;")
                     else:
                         self.tokenizer.nextToken()
                 elif self.tokenizer.actual.type == "EOL":
@@ -197,8 +204,14 @@ class Parser:
             if self.tokenizer.actual.type == "EQUALS":
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseOrExpression()
+                if self.symbols.getSymbol(output.value)[0] == type("pedro"):
+                    val = ""
+                elif self.symbols.getSymbol(output.value)[0] == type(0):
+                    val = 0
+                else:
+                    val = False
                 self.symbols.setSymbol(
-                    output.value, 0, self.symbols.getSymbol(output.value)[0]
+                    output.value, val, self.symbols.getSymbol(output.value)[0]
                 )
                 tree = BinaryOperation(
                     token_type, [output.value, secondChild], self.symbols

@@ -1,6 +1,6 @@
-{
-    string x = "pedro";
-    string y = "pedro";
-    bool z = x == y;
-    println(z);
+{/* ERROR: redeclarar variavel*/
+    int x;
+    bool x;
+    x = 5;
+    println(x);
 }
