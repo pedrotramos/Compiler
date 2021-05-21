@@ -206,6 +206,9 @@ class Parser:
                 output = IfOperation("IF-ELSE", [condition, command_if, command_else])
             else:
                 output = IfOperation("IF-ELSE", [condition, command_if])
+        elif self.tokenizer.actual.type == "EOL":
+            output = None
+            self.tokenizer.nextToken()
         return output
 
     def parse(self):
