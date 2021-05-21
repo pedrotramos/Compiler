@@ -113,11 +113,21 @@ class BinaryOperation(Node):
             if node1[0] == type("pedro") or node2[0] == type("pedro"):
                 raise TypeError("Não é possível fazer operação and de strings")
             and_op = node1[1] and node2[1]
+            if type(and_op) == type(0):
+                if and_op != 0:
+                    and_op = True
+                else:
+                    and_op = False
             return (type(and_op), and_op)
         elif self.value == "OR":
             if node1[0] == type("pedro") or node2[0] == type("pedro"):
                 raise TypeError("Não é possível fazer operação or de strings")
             or_op = node1[1] or node2[1]
+            if type(or_op) == type(0):
+                if or_op != 0:
+                    or_op = True
+                else:
+                    or_op = False
             return (type(or_op), or_op)
         else:
             raise ValueError("Operador binário com valor inválido")
