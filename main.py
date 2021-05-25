@@ -12,7 +12,7 @@ class Calculator:
         self.error = False
 
     def parse(self, arg):
-        self.txt = arg.replace(" ", "")
+        self.txt = arg
         for i in range(len(self.txt)):
             if self.txt[i] not in self.valid:
                 print("Argumento Inválido. Há caracteres inválidos no argumento.")
