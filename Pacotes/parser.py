@@ -3,43 +3,35 @@ from .node_structures import (
     BlockOperation,
     BinaryOperation,
     IfOperation,
-    ReadOperation,
     UnaryOperation,
     IntegerValue,
     BoolValue,
-    StringValue,
     Variable,
     PrintOperation,
-    ReadOperation,
     WhileOperation,
 )
 from .symbolTable import SymbolTable
+from .assembler import Assembler
 
 
 class Parser:
     def __init__(self):
         self.tokenizer = Tokenizer()
         self.symbols = SymbolTable()
+        self.assembler = Assembler()
 
     def parseFactor(self):
         self.tokenizer.nextToken()
         if self.tokenizer.actual.type == "VAR":
-            return Variable(self.tokenizer.actual.value, self.symbols)
-        elif self.tokenizer.actual.type == "READLN":
-            self.tokenizer.nextToken()
-            self.tokenizer.nextToken()
-            read_tree = ReadOperation("READLN", [self.parseOrExpression()])
-            if self.tokenizer.actual.type != "EOL":
-                raise ("Um readln deve terminar com ;")
-            return read_tree
+            return Variable(self.tokenizer.actual.value, self.assembler, self.symbols)
         elif self.tokenizer.actual.type == "INT":
-            return IntegerValue(self.tokenizer.actual.value)
-        elif self.tokenizer.actual.type == "STRING":
-            return StringValue(self.tokenizer.actual.value)
+            return IntegerValue(self.tokenizer.actual.value, self.assembler)
         elif self.tokenizer.actual.type == "BOOL":
-            return BoolValue(self.tokenizer.actual.value)
+            return BoolValue(self.tokenizer.actual.value, self.assembler)
         elif self.tokenizer.actual.type in ["PLUS", "MINUS", "NOT"]:
-            return UnaryOperation(self.tokenizer.actual.type, [self.parseFactor()])
+            return UnaryOperation(
+                self.tokenizer.actual.type, [self.parseFactor()], self.assembler
+            )
         elif self.tokenizer.actual.type == "INIT_PARENTHESIS":
             expression_tree = self.parseOrExpression()
             if self.tokenizer.actual.type == "END_PARENTHESIS":
@@ -59,7 +51,9 @@ class Parser:
             elif self.tokenizer.actual.type in ["TIMES", "DIVIDED"]:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseFactor()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -77,7 +71,9 @@ class Parser:
             elif self.tokenizer.actual.type in ["PLUS", "MINUS"]:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseTerm()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -94,7 +90,9 @@ class Parser:
             elif self.tokenizer.actual.type in ["GT_COMPARE", "LT_COMPARE"]:
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseExpression()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -111,7 +109,9 @@ class Parser:
             elif self.tokenizer.actual.type == "EQ_COMPARE":
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseRelExpression()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -128,7 +128,9 @@ class Parser:
             elif self.tokenizer.actual.type == "AND":
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseEqExpression()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -145,7 +147,9 @@ class Parser:
             elif self.tokenizer.actual.type == "OR":
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseAndExpression()
-                tree = BinaryOperation(token_type, [output, secondChild], self.symbols)
+                tree = BinaryOperation(
+                    token_type, [output, secondChild], self.assembler, self.symbols
+                )
                 output = tree
             elif self.tokenizer.actual.type == "INT":
                 raise ValueError(
@@ -158,22 +162,19 @@ class Parser:
             output = self.parse()
             self.tokenizer.nextToken()
         elif self.tokenizer.actual.type == "PRINTLN":
-            output = PrintOperation("PRINTLN", [self.parseOrExpression()])
+            output = PrintOperation(
+                "PRINTLN", [self.parseOrExpression()], self.assembler
+            )
             if self.tokenizer.actual.type != "EOL":
                 raise ("Um println deve terminar com ;")
             else:
                 self.tokenizer.nextToken()
         elif self.tokenizer.actual.type == "TYPE":
-            val_type = self.tokenizer.actual.value
-            if val_type == "string":
-                val = ""
-            elif val_type == "int":
-                val = 0
-            else:
-                val = False
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "VAR":
-                output = Variable(self.tokenizer.actual.value, self.symbols)
+                output = Variable(
+                    self.tokenizer.actual.value, self.assembler, self.symbols
+                )
                 exists = None
                 try:
                     exists = self.symbols.getSymbol(output.value)
@@ -181,13 +182,15 @@ class Parser:
                     pass
                 if exists != None:
                     raise ValueError("Não é possível redeclarar variáveis")
-                self.symbols.setSymbol(output.value, val, val_type)
                 self.tokenizer.nextToken()
                 if self.tokenizer.actual.type == "EQUALS":
                     token_type = self.tokenizer.actual.type
                     secondChild = self.parseOrExpression()
                     tree = BinaryOperation(
-                        token_type, [output.value, secondChild], self.symbols
+                        token_type,
+                        [output.value, secondChild],
+                        self.assembler,
+                        self.symbols,
                     )
                     output = tree
                     if self.tokenizer.actual.type != "EOL":
@@ -199,22 +202,16 @@ class Parser:
             else:
                 raise ValueError("Erro na definição de variável")
         elif self.tokenizer.actual.type == "VAR":
-            output = Variable(self.tokenizer.actual.value, self.symbols)
+            output = Variable(self.tokenizer.actual.value, self.assembler, self.symbols)
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "EQUALS":
                 token_type = self.tokenizer.actual.type
                 secondChild = self.parseOrExpression()
-                if self.symbols.getSymbol(output.value)[0] == type("pedro"):
-                    val = ""
-                elif self.symbols.getSymbol(output.value)[0] == type(0):
-                    val = 0
-                else:
-                    val = False
-                self.symbols.setSymbol(
-                    output.value, val, self.symbols.getSymbol(output.value)[0]
-                )
                 tree = BinaryOperation(
-                    token_type, [output.value, secondChild], self.symbols
+                    token_type,
+                    [output.value, secondChild],
+                    self.assembler,
+                    self.symbols,
                 )
                 output = tree
                 if self.tokenizer.actual.type != "EOL":
@@ -235,7 +232,7 @@ class Parser:
                 )
             self.tokenizer.nextToken()
             command = self.parseCommand()
-            output = WhileOperation("WHILE", [condition, command])
+            output = WhileOperation("WHILE", [condition, command], self.assembler)
         elif self.tokenizer.actual.type == "IF":
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "INIT_PARENTHESIS":
@@ -251,9 +248,11 @@ class Parser:
             if self.tokenizer.actual.type == "ELSE":
                 self.tokenizer.nextToken()
                 command_else = self.parseCommand()
-                output = IfOperation("IF-ELSE", [condition, command_if, command_else])
+                output = IfOperation(
+                    "IF-ELSE", [condition, command_if, command_else], self.assembler
+                )
             else:
-                output = IfOperation("IF-ELSE", [condition, command_if])
+                output = IfOperation("IF-ELSE", [condition, command_if], self.assembler)
         return output
 
     def parse(self):
@@ -277,4 +276,5 @@ class Parser:
         #     print(i)
         if self.tokenizer.actual.type != "EOF":
             raise ValueError(f"Erro no programa. Token: {self.tokenizer.actual.type}")
-        return ast.evaluate()
+        ast.evaluate()
+        return self.assembler.code

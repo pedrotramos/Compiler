@@ -12,6 +12,7 @@ if __name__ == "__main__":
                 arg = f.read()
             txt = PreProcessor().filter(src=arg)
             result = Parser().run(txt)
+            print(result)
         else:
             raise argparse.ArgumentError(
                 "O argumento do programa deve ser um arquivo C"
