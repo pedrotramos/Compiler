@@ -1,7 +1,11 @@
+from enum import unique
+
+
 class Node:
-    def __init__(self, val, child_list):
+    def __init__(self, val, child_list, assembler):
         self.value = val
         self.children = child_list
+        self.assembler = assembler
 
     def evaluate(self):
         pass
@@ -21,124 +25,88 @@ class BlockOperation(Node):
 
 
 class PrintOperation(Node):
-    def __init__(self, val, child_list):
+    def __init__(self, val, child_list, assembler):
         if len(child_list) != 1:
             raise ValueError("Uma operação de println deve ter apenas um nó filho")
         else:
-            super().__init__(val, child_list)
+            super().__init__(val, child_list, assembler)
 
     def evaluate(self):
-        if self.children[0].evaluate()[0] == type("pedro"):
-            print(self.children[0].evaluate()[-1][1:-1])
-        else:
-            print(self.children[0].evaluate()[-1])
-
-
-class ReadOperation(Node):
-    def __init__(self, val, child_list):
-        if len(child_list) != 1:
-            raise ValueError("Uma operação de readln deve ter apenas um nó filho")
-        else:
-            super().__init__(val, child_list)
-
-    def evaluate(self):
-        try:
-            val = int(input())
-            return (type(val), val)
-        except:
-            raise ("O valor inputado deve ser um número inteiro")
+        self.children[0].evaluate()
+        self.assembler.pushStack()
+        self.assembler.printOp()
+        self.assembler.popStack()
 
 
 class BinaryOperation(Node):
-    def __init__(self, val, child_list, s):
+    def __init__(self, val, child_list, assembler, s):
         if len(child_list) != 2:
             raise ValueError("Uma operação binária deve possuir dois nós filhos")
         else:
             self.symbols = s
-            super().__init__(val, child_list)
+            super().__init__(val, child_list, assembler)
 
     def evaluate(self):
         if self.value == "EQUALS":
-            self.symbols.setSymbol(
-                self.children[0],
-                self.children[1].evaluate()[1],
-                self.symbols.getSymbol(self.children[0])[0],
-            )
+            try:
+                self.symbols.getSymbol(self.children[0])
+                self.children[1].evaluate()
+            except:
+                self.assembler.newVariable()
+                self.symbols.setSymbol(self.children[0])
+                self.children[1].evaluate()
+            self.assembler.setVariable(self.symbols.getSymbol(self.children[0]))
             return
-        node1 = self.children[0].evaluate()
-        node2 = self.children[1].evaluate()
-        if type(node1[0]) == type("pedro") or type(node2[0]) == type("pedro"):
-            raise ValueError(
-                "Operações binárias só podem ser feitas entre 'int' e 'bool'"
-            )
+        self.children[0].evaluate()
+        self.assembler.pushStack()
+        self.children[1].evaluate()
+        self.assembler.popStack()
         if self.value == "PLUS":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer soma de strings")
-            soma = node1[1] + node2[1]
-            return (type(soma), soma)
+            self.assembler.addOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "MINUS":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer subtração de strings")
-            subtracao = node1[1] - node2[1]
-            return (type(subtracao), subtracao)
+            self.assembler.subOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "TIMES":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer multiplicação de strings")
-            multiplicacao = int(node1[1] * node2[1])
-            return (type(multiplicacao), multiplicacao)
+            self.assembler.multOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "DIVIDED":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer divisão de strings")
-            divisao = int(node1[1] / node2[1])
-            return (type(divisao), divisao)
+            self.assembler.divOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "EQ_COMPARE":
-            eq_comp = node1[1] == node2[1]
-            if eq_comp:
-                return (type(eq_comp), 1)
-            else:
-                return (type(eq_comp), 0)
+            self.assembler.eqOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "GT_COMPARE":
-            gt_comp = node1[1] > node2[1]
-            if gt_comp:
-                return (type(gt_comp), 1)
-            else:
-                return (type(gt_comp), 0)
+            self.assembler.gtOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "LT_COMPARE":
-            lt_comp = node1[1] < node2[1]
-            if lt_comp:
-                return (type(lt_comp), 1)
-            else:
-                return (type(lt_comp), 0)
+            self.assembler.ltOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "AND":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer operação and de strings")
-            and_op = node1[1] and node2[1]
-            if type(and_op) == type(0):
-                if and_op != 0:
-                    and_op = True
-                else:
-                    and_op = False
-            return (type(and_op), and_op)
+            self.assembler.andOp()
+            self.assembler.finalizeBinOp()
+            return
         elif self.value == "OR":
-            if node1[0] == type("pedro") or node2[0] == type("pedro"):
-                raise TypeError("Não é possível fazer operação or de strings")
-            or_op = node1[1] or node2[1]
-            if type(or_op) == type(0):
-                if or_op != 0:
-                    or_op = True
-                else:
-                    or_op = False
-            return (type(or_op), or_op)
+            self.assembler.orOp()
+            self.assembler.finalizeBinOp()
+            return
         else:
             raise ValueError("Operador binário com valor inválido")
 
 
 class UnaryOperation(Node):
-    def __init__(self, val, child_list):
+    def __init__(self, val, child_list, assembler):
         if len(child_list) != 1:
             raise ValueError("Uma operação unária deve ter apenas um nó filho")
         else:
-            super().__init__(val, child_list)
+            super().__init__(val, child_list, assembler)
 
     def evaluate(self):
         if self.value == "PLUS":
@@ -155,23 +123,15 @@ class UnaryOperation(Node):
 
 
 class IntegerValue(Node):
-    def __init__(self, val):
-        super().__init__(val, None)
+    def __init__(self, val, assembler):
+        super().__init__(val, None, assembler)
 
     def evaluate(self):
-        return (type(self.value), self.value)
-
-
-class StringValue(Node):
-    def __init__(self, val):
-        super().__init__(val, None)
-
-    def evaluate(self):
-        return (type(self.value), self.value)
+        return self.assembler.intVal(self.value)
 
 
 class BoolValue(Node):
-    def __init__(self, val):
+    def __init__(self, val, assembler):
         if val == "true":
             boolVal = True
         elif val == "false":
@@ -186,45 +146,48 @@ class BoolValue(Node):
                 raise ValueError(
                     "não é possível atribuir esse tipo de valor a uma variável booleana"
                 )
-        super().__init__(boolVal, None)
+        super().__init__(boolVal, None, assembler)
 
     def evaluate(self):
         return (type(self.value), self.value)
 
 
 class WhileOperation(Node):
-    def __init__(self, val, child_list):
+    def __init__(self, val, child_list, assembler):
         if len(child_list) != 2:
             raise ValueError("Uma operação while deve possuir dois nós filhos")
         else:
-            super().__init__(val, child_list)
+            super().__init__(val, child_list, assembler)
 
     def evaluate(self):
-        while self.children[0].evaluate()[1]:
-            if self.children[0].evaluate()[0] == type("pedro"):
-                raise ValueError("O resultado de uma condição não pode ser uma STRING")
-            self.children[1].evaluate()
+        uniqueID = self.assembler.createLabel("LOOP", self.assembler.uid)
+        self.assembler.nextUID()
+        self.children[0].evaluate()
+        self.assembler.checkExit(uniqueID)
+        self.children[1].evaluate()
+        self.assembler.closeLoop(uniqueID)
 
 
 class IfOperation(Node):
-    def __init__(self, val, child_list):
+    def __init__(self, val, child_list, assembler):
         if len(child_list) not in [2, 3]:
             raise ValueError(
                 "Uma operação if-else deve possuir dois ou três nós filhos"
             )
         else:
-            super().__init__(val, child_list)
+            super().__init__(val, child_list, assembler)
 
     def evaluate(self):
-        condition = self.children[0].evaluate()
-        if condition[0] != type("pedro"):
-            if condition[1]:
-                self.children[1].evaluate()
-            else:
-                if len(self.children) == 3:
-                    self.children[2].evaluate()
-        else:
-            raise ValueError("O resultado de uma condição não pode ser uma STRING")
+        self.children[0].evaluate()
+        uniqueID = self.assembler.checkIf(self.assembler.uid)
+        self.assembler.nextUID()
+        self.children[1].evaluate()
+        self.assembler.jumpToEndIfElse(uniqueID)
+        self.assembler.elseCommands(uniqueID)
+        if len(self.children) == 3:
+            self.children[2].evaluate()
+            self.assembler.jumpToEndIfElse(uniqueID)
+        self.assembler.closeIfElse(uniqueID)
 
 
 class NoOperation(Node):
@@ -236,9 +199,14 @@ class NoOperation(Node):
 
 
 class Variable(Node):
-    def __init__(self, val, s):
+    def __init__(self, val, assembler, s):
         self.symbols = s
-        super().__init__(val, None)
+        super().__init__(val, None, assembler)
 
     def evaluate(self):
-        return self.symbols.getSymbol(self.value)
+        try:
+            self.assembler.getVariable(self.symbols.getSymbol(self.value))
+        except:
+            self.assembler.newVariable()
+            self.symbols.setSymbol(self.value)
+        return
