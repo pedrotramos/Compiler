@@ -1,3 +1,4 @@
+import re
 import sys
 import argparse
 from Pacotes.preprocessor import PreProcessor
@@ -12,7 +13,11 @@ if __name__ == "__main__":
                 arg = f.read()
             txt = PreProcessor().filter(src=arg)
             result = Parser().run(txt)
-            print(result)
+            with open("base.asm", "r") as f:
+                baseCode = f.read()
+            repl = "; codigo gerado pelo compilador" + result
+            finalCode = re.sub(r"; codigo gerado pelo compilador\n", repl, baseCode)
+            print(finalCode)
         else:
             raise argparse.ArgumentError(
                 "O argumento do programa deve ser um arquivo C"
