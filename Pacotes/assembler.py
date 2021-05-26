@@ -3,8 +3,7 @@ import os
 
 class Assembler:
     def __init__(self):
-        with open("base.asm", "r") as f:
-            self.code = f.read()
+        self.code = ""
         self.uid = 0
 
     def pushStack(self):
