@@ -1,3 +1,7 @@
+from Pacotes.symbolTable import SymbolTable
+from copy import deepcopy
+
+
 class Node:
     def __init__(self, val, child_list):
         self.value = val
@@ -8,7 +12,9 @@ class Node:
 
 
 class BlockOperation(Node):
-    def __init__(self):
+    def __init__(self, func, s):
+        self.func_name = func
+        self.symbols = s
         self.value = "BLOCK"
         self.children = []
 
@@ -17,7 +23,12 @@ class BlockOperation(Node):
 
     def evaluate(self):
         for node in self.children:
-            node.evaluate()
+            last = node.evaluate()
+            try:
+                return self.symbols.getSymbol(self.func_name, "return")
+            except:
+                continue
+        return last
 
 
 class PrintOperation(Node):
@@ -49,6 +60,22 @@ class ReadOperation(Node):
             raise ("O valor inputado deve ser um número inteiro")
 
 
+class Attribuition:
+    def __init__(self, func_name, var_name, expression, s):
+        self.func_name = func_name
+        self.var_name = var_name
+        self.expression = expression
+        self.symbols = s
+
+    def evaluate(self):
+        self.symbols.setSymbol(
+            self.func_name,
+            self.var_name,
+            self.expression.evaluate()[1],
+            self.symbols.getSymbol(self.func_name, self.var_name)[0],
+        )
+
+
 class BinaryOperation(Node):
     def __init__(self, val, child_list, s):
         if len(child_list) != 2:
@@ -58,13 +85,6 @@ class BinaryOperation(Node):
             super().__init__(val, child_list)
 
     def evaluate(self):
-        if self.value == "EQUALS":
-            self.symbols.setSymbol(
-                self.children[0],
-                self.children[1].evaluate()[1],
-                self.symbols.getSymbol(self.children[0])[0],
-            )
-            return
         node1 = self.children[0].evaluate()
         node2 = self.children[1].evaluate()
         if type(node1[0]) == type("pedro") or type(node2[0]) == type("pedro"):
@@ -217,12 +237,13 @@ class IfOperation(Node):
 
     def evaluate(self):
         condition = self.children[0].evaluate()
+        # print(condition)
         if condition[0] != type("pedro"):
             if condition[1]:
-                self.children[1].evaluate()
+                return self.children[1].evaluate()
             else:
                 if len(self.children) == 3:
-                    self.children[2].evaluate()
+                    return self.children[2].evaluate()
         else:
             raise ValueError("O resultado de uma condição não pode ser uma STRING")
 
@@ -236,9 +257,91 @@ class NoOperation(Node):
 
 
 class Variable(Node):
-    def __init__(self, val, s):
+    def __init__(self, func, val, s):
         self.symbols = s
+        self.func_name = func
         super().__init__(val, None)
 
     def evaluate(self):
-        return self.symbols.getSymbol(self.value)
+        return self.symbols.getSymbol(self.func_name, self.value)
+
+
+class Parameter(Node):
+    def __init__(self, func, val, s):
+        self.symbols = s
+        self.func_name = func
+        super().__init__(val, None)
+
+    def evaluate(self):
+        return self.symbols.getFunctionParam(self.func_name, self.value)
+
+
+class Function:
+    def __init__(self, name, func_type):
+        self.name = name
+        self.type = func_type
+
+    def evaluate(self):
+        return (self.type, self.name)
+
+
+class VarDec:
+    def __init__(self, children):
+        self.children = children
+
+    def evaluate():
+        pass
+
+
+class FuncDec:
+    def __init__(self, name, var_dec, stmts, s):
+        self.name = name
+        self.var_dec = var_dec
+        self.statements = stmts
+        self.symbols = s
+
+    def evaluate(self):
+        self.statements.evaluate()
+
+
+class FuncCall:
+    def __init__(self, func_name, children, s):
+        self.name = func_name
+        self.children = children
+        self.symbols = s
+
+    def evaluate(self):
+        newSymbols = deepcopy(self.symbols)
+        function_params = self.symbols.getFunctionParams(self.name)
+        for child, param_name in zip(self.children, function_params.keys()):
+            child_type, child_val = child.evaluate()
+            newSymbols.setSymbol(self.name, param_name, child_val, child_type)
+        statements = newSymbols.getFunctionStmts(self.name)
+        call_output = statements.evaluate()
+        return call_output
+
+
+class Return:
+    def __init__(self, expression, func, s):
+        self.func_name = func
+        self.symbols = s
+        self.exp = expression
+
+    def evaluate(self):
+        self.symbols.setSymbol(
+            self.func_name,
+            "return",
+            self.exp.evaluate()[1],
+            self.symbols.getFunctionType(self.func_name),
+        )
+        return self.exp.evaluate()
+
+
+class Root(Node):
+    def __init__(self, val, child_list):
+        super().__init__(val, child_list)
+
+    def evaluate(self):
+        for child in self.children:
+            if child.name == "main":
+                child.evaluate()

@@ -29,9 +29,11 @@ class Tokenizer:
                 (r"else", lambda scanner, token: Token("ELSE", token)),
                 (r"readln", lambda scanner, token: Token("READLN", token)),
                 (r"println", lambda scanner, token: Token("PRINTLN", token)),
+                (r"return", lambda scanner, token: Token("RETURN", token)),
+                (r"\,", lambda scanner, token: Token("SEP", token)),
                 (
                     r"[a-zA-Z_$][a-zA-Z_$0-9]*",
-                    lambda scanner, token: Token("VAR", token),
+                    lambda scanner, token: Token("IDENTIFIER", token),
                 ),
                 (r"\".*\"", lambda scanner, token: Token("STRING", token)),
                 (r"[0-9]+", lambda scanner, token: Token("INT", int(token))),
@@ -58,7 +60,7 @@ class Tokenizer:
         results = scanner.scan(self.origin)[0]
         # for result in results:
         #     print(result.type, result.value)
-        results.append(Token("EOF", ""))
+        results.append(Token("EOF", "End Of File"))
         self.tokens = results
         return self.tokens
 
@@ -66,3 +68,10 @@ class Tokenizer:
         if self.position + 1 <= len(self.tokens):
             self.actual = self.tokens[self.position]
             self.position += 1
+            # print(self.actual.type, self.actual.value)
+
+    def prevToken(self):
+        if self.position - 1 >= 0:
+            self.position -= 1
+            self.actual = self.tokens[self.position - 1]
+            # print(self.actual.type, self.actual.value)

@@ -1,15 +1,33 @@
+int fib(int n)
 {
-    bool a;
-    int b;
-    int c;
-    
-    b = 32;
-    c = 32;
-    a = true;
+    if (n > 1)
+        return fib(n - 1) + fib(n - 2);
 
-    if ((b && c) == a) {
-    	println(1);
-    }else{
-    	println(2);
+    return n;
+}
+
+int retornaUm()
+{
+    return 1;
+}
+
+int main()
+{
+    bool x;
+    x = true;
+    if (x)
+    {
+        println(x);
+    }
+    x = retornaUm();
+    println(x);
+    int y;
+    y = retornaUm();
+    println(y);
+    y = 0;
+    while (y < 10)
+    {
+        println(fib(y));
+        y = y + 1;
     }
 }
