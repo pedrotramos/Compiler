@@ -69,7 +69,6 @@ class Parser:
         elif self.tokenizer.actual.type == "INIT_PARENTHESIS":
             expression_tree = self.parseOrExpression(func_name)
             if self.tokenizer.actual.type == "END_PARENTHESIS":
-                self.tokenizer.nextToken()
                 return expression_tree
             else:
                 raise ValueError("Não foi possível fechar os parênteses")
