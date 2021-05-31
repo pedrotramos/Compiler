@@ -51,7 +51,6 @@ class SymbolTable:
                     "type": finalType,
                 }
             except:
-                print(function, name, value, val_type)
                 raise TypeError("Erro de tipagem")
         elif val_type in ["bool", type(True)]:
             finalType = type(False)
@@ -75,6 +74,13 @@ class SymbolTable:
             raise TypeError("Esse tipo não é suportado")
 
     def setFunction(self, name, parameters, func_type):
+        exists = False
+        try:
+            exists = self.symbols[name]
+        except:
+            pass
+        if exists:
+            raise Exception(f"A função {name} está sendo declarada mais de uma vez")
         self.symbols[name] = {
             "params": parameters,
             "vars": {},

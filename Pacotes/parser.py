@@ -8,7 +8,6 @@ from .node_structures import (
     Function,
     IfOperation,
     Parameter,
-    ReadOperation,
     Return,
     Root,
     UnaryOperation,
@@ -37,7 +36,7 @@ class Parser:
             if self.tokenizer.actual.type == "INIT_PARENTHESIS":
                 call_children = []
                 self.tokenizer.nextToken()
-                while True:
+                while self.tokenizer.actual.type != "END_PARENTHESIS":
                     self.tokenizer.prevToken()
                     child = self.parseOrExpression(func_name)
                     call_children.append(child)
@@ -52,7 +51,7 @@ class Parser:
         elif self.tokenizer.actual.type == "READLN":
             self.tokenizer.nextToken()
             self.tokenizer.nextToken()
-            read_tree = ReadOperation("READLN", [self.parseOrExpression()])
+            read_tree = ReadOperation("READLN", [self.parseOrExpression(func_name)])
             if self.tokenizer.actual.type != "EOL":
                 raise ("Um readln deve terminar com ;")
             return read_tree
@@ -234,13 +233,7 @@ class Parser:
             self.tokenizer.nextToken()
             if self.tokenizer.actual.type == "EQUALS":
                 output = Variable(func_name, identifier_name, self.symbols)
-                self.tokenizer.nextToken()
-                try:
-                    self.symbols.getFunctionParams(self.tokenizer.actual.value)
-                    secondChild = self.parseCommand(func_name)
-                except:
-                    self.tokenizer.prevToken()
-                    secondChild = self.parseOrExpression(func_name)
+                secondChild = self.parseOrExpression(func_name)
                 if self.symbols.getSymbol(func_name, output.value)[0] == type("pedro"):
                     val = ""
                 elif self.symbols.getSymbol(func_name, output.value)[0] == type(0):
@@ -256,7 +249,9 @@ class Parser:
                 tree = Attribuition(func_name, output.value, secondChild, self.symbols)
                 output = tree
                 if self.tokenizer.actual.type != "EOL":
-                    raise ("Uma atribuição deve terminar com ;")
+                    self.tokenizer.nextToken()
+                    if self.tokenizer.actual.type != "EOL":
+                        raise ("Uma atribuição deve terminar com ;")
                 else:
                     self.tokenizer.nextToken()
 
@@ -272,6 +267,7 @@ class Parser:
                 self.tokenizer.nextToken()
                 if self.tokenizer.actual.type != "EOL":
                     raise ("Uma atribuição deve terminar com ;")
+                self.tokenizer.nextToken()
                 output = FuncCall(identifier_name, call_children, self.symbols)
             else:
                 raise ("Erro na definição de variável ou na chamada de uma função")
@@ -306,6 +302,10 @@ class Parser:
                 output = IfOperation("IF-ELSE", [condition, command_if, command_else])
             else:
                 output = IfOperation("IF-ELSE", [condition, command_if])
+        # for t in self.tokenizer.tokens[
+        #     self.tokenizer.position - 1 : self.tokenizer.position + 2
+        # ]:
+        #     print(t.type, t.value, 1)
         return output
 
     def parseBlock(self, func_name):

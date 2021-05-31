@@ -1,6 +1,19 @@
-int main()
-{
-    if ((1==1) || (1==0)){
-        println(1);
-    }
+int soma(int x, int y, int z){
+
+    return x + y;
+
+}
+
+
+
+
+
+int main(){
+
+    int x;
+
+    x = soma(2,3);
+
+    println(x);
+
 }

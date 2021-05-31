@@ -237,7 +237,6 @@ class IfOperation(Node):
 
     def evaluate(self):
         condition = self.children[0].evaluate()
-        # print(condition)
         if condition[0] != type("pedro"):
             if condition[1]:
                 return self.children[1].evaluate()
@@ -306,9 +305,12 @@ class FuncDec:
 
 class FuncCall:
     def __init__(self, func_name, children, s):
-        self.name = func_name
-        self.children = children
-        self.symbols = s
+        if len(children) == len(s.getFunctionParams(func_name)):
+            self.name = func_name
+            self.children = children
+            self.symbols = s
+        else:
+            raise ValueError(f"Argumentos faltantes na chamada da função {func_name}")
 
     def evaluate(self):
         newSymbols = deepcopy(self.symbols)
