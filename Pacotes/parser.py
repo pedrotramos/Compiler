@@ -359,6 +359,8 @@ class Parser:
                                     break
                                 elif self.tokenizer.actual.type == "SEP":
                                     self.tokenizer.nextToken()
+                                    if self.tokenizer.actual.type != "TYPE":
+                                        raise Exception("Vírgula sem novo parâmetro")
                                 else:
                                     raise ValueError("Erro na declaração de função")
                             else:

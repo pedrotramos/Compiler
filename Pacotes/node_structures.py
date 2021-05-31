@@ -317,7 +317,12 @@ class FuncCall:
         function_params = self.symbols.getFunctionParams(self.name)
         for child, param_name in zip(self.children, function_params.keys()):
             child_type, child_val = child.evaluate()
-            newSymbols.setSymbol(self.name, param_name, child_val, child_type)
+            if child_type == function_params[param_name]["type"]:
+                newSymbols.setSymbol(self.name, param_name, child_val, child_type)
+            else:
+                raise Exception(
+                    f"Passando parâmetro com tipo errado na função {self.name}"
+                )
         statements = newSymbols.getFunctionStmts(self.name)
         call_output = statements.evaluate()
         return call_output

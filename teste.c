@@ -1,6 +1,8 @@
-int soma(int x, int y, int z){
+/*Erro: tipo do parametro*/
 
-    return x + y;
+int exibe(int x){
+
+    println(x);
 
 }
 
@@ -10,10 +12,10 @@ int soma(int x, int y, int z){
 
 int main(){
 
-    int x;
+    string msg;
 
-    x = soma(2,3);
+    msg = "oi";
 
-    println(x);
+    exibe(msg);
 
 }
